@@ -1,0 +1,21 @@
+import sounddevice as sd
+import numpy as np
+import time
+
+
+class MicAudioSource(AbstractAudioSource):
+    def __init__(self, sample_rate=16000, chunk_duration=0.5):
+        self.sample_rate = sample_rate
+        self.chunk_size = int(sample_rate * chunk_duration)
+
+    def stream_chunks(self):
+        with sd.InputStream(channels=1, samplerate=self.sample_rate,
+                            dtype='int16', blocksize=self.chunk_size) as stream:
+            while True:
+                data, _ = stream.read(self.chunk_size)
+                samples = data[:, 0]  # mono
+                yield AudioChunk(
+                    samples=samples,
+                    sample_rate=self.sample_rate,
+                    start_time=time.time()
+                )
